@@ -1,584 +1,140 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI for ETF · 智能分析</title>
-<style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
-    }
-    body {
-        background: #f5f7fa;
-        padding: 20px;
-    }
-    .container {
-        max-width: 480px;
-        margin: 0 auto;
-    }
-    .title {
-        text-align: center;
-        font-size: 20px;
-        font-weight: bold;
-        margin: 10px 0 20px;
-    }
-    .card {
-        background: white;
-        border-radius: 16px;
-        padding: 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    }
-    select {
-        width: 100%;
-        padding: 14px;
-        border-radius: 10px;
-        border: 1px solid #eee;
-        font-size: 15px;
-        margin-bottom: 14px;
-    }
-    button {
-        width: 100%;
-        padding: 14px;
-        border-radius: 10px;
-        background: #d4a85f;
-        color: white;
-        font-size: 16px;
-        font-weight: bold;
-        border: none;
-    }
-    button:disabled {
-        background: #ccc;
-    }
-    .thinking {
-        margin-top: 16px;
-        max-height: 400px;
-        overflow-y: auto;
-        font-size: 14px;
-        line-height: 1.6;
-    }
-    .think-line {
-        padding: 8px 12px;
-        background: #f0f4ff;
-        border-radius: 8px;
-        margin-bottom: 8px;
-    }
-    .result-box {
-        margin-top: 20px;
-        padding: 16px;
-        background: #fff9e6;
-        border-radius: 12px;
-        font-size: 15px;
-        line-height: 1.7;
-    }
-</style>
+    <meta charset="UTF-8">
+    <title>AI for ETF · 智能投资分析</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif}
+        body{background:#f5f6f8;padding:20px;max-width:480px;margin:0 auto}
+        .title{text-align:center;font-size:22px;font-weight:600;color:#222;margin-bottom:20px}
+        .select-box{background:#fff;border-radius:12px;padding:20px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+        select,button{width:100%;padding:12px;border-radius:8px;border:1px solid #e0e0e0;font-size:16px;margin-top:10px}
+        button{background:#c9a86c;color:white;border:none;cursor:pointer}
+        button:disabled{background:#ccc}
+        .result-card{background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+        .card-header{margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid #f0f0f0}
+        .card-title{font-size:18px;font-weight:600;margin-bottom:8px}
+        .card-code{font-size:14px;color:#666;margin-bottom:8px}
+        .card-date{font-size:14px;color:#999;/* 日期单独样式 */}
+        .info-row{display:flex;justify-content:space-between;margin-bottom:16px}
+        .info-col{width:48%}
+        .label{font-size:14px;color:#666;margin-bottom:6px}
+        .suggest{display:inline-block;padding:8px 14px;background:#fff9e6;border:1px solid #e6d5a8;border-radius:8px;font-size:16px;font-weight:600;color:#b4883d}
+        .date{font-size:16px;color:#333}
+        .reason{margin-top:16px;font-size:15px;line-height:1.7;color:#333;white-space:pre-line}
+        .loading{color:#999;font-style:italic;line-height:1.8;}
+        .loading-item::before{content:'▸ ';color:#c9a86c;animation:blink 1s infinite;}
+        @keyframes blink{0%,100%{opacity:1;}50%{opacity:0.3;}}
+    </style>
 </head>
 <body>
-<div class="container">
-    <div class="title">📊 AI for ETF · 基金分析</div>
-    <div class="card">
-        <select id="etfSelect">
-            <option value="563360">563360 中证A500ETF</option>
-            <option value="159915">159915 创业板ETF</option>
-            <option value="513120">513120 港股创新药ETF</option>
-            <option value="513090">513090 香港证券ETF</option>
-            <option value="518880">518880 黄金ETF</option>
-            <option value="510300">510300 沪深300ETF</option>
-            <option value="513310">513310 中韩半导体ETF</option>
-            <option value="513180">513180 恒生科技ETF</option>
-            <option value="588000">588000 科创50ETF</option>
-            <option value="510050">510050 上证50ETF</option>
-            <option value="588200">588200 科创芯片ETF</option>
-            <option value="515880">515880 通信ETF</option>
-            <option value="512100">512100 中证1000ETF</option>
-            <option value="159949">159949 创业板50ETF</option>
-            <option value="513050">513050 中概互联网ETF</option>
-            <option value="159363">159363 创业板人工智能ETF</option>
-            <option value="159326">159326 电网设备ETF</option>
-            <option value="159206">159206 卫星ETF</option>
-            <option value="512880">512880 证券ETF</option>
-            <option value="159516">159516 半导体设备ETF</option>
+    <div class="title">📊 AI for ETF · 智能分析</div>
+    <div class="select-box">
+        <label>选择ETF标的：</label>
+        <select id="etfSel">
+            {% for e in etf_list %}
+            <option value="{{e}}">{{e}}</option>
+            {% endfor %}
         </select>
-        <button onclick="startAnalyze()">开始AI分析</button>
-        <div class="thinking" id="thinkOutput"></div>
-        <div class="result-box" id="result" style="display:none;"></div>
+        <button onclick="analyze()" id="btn">开始分析</button>
     </div>
-</div>
+    <div id="result"></div>
 
-<script>
-const thinkText = {
-"563360": [
-"【检索】获取中证A500成分股与行业分布 | https://www.csindex.com.cn/",
-"【技术】MACD零轴附近震荡，方向不明确 | https://www.10jqka.com.cn/",
-"【资金】短期资金小幅流出 | https://data.eastmoney.com/",
-"【政策】中长期资金入市利好宽基 | https://www.gov.cn/",
-"【结论】震荡为主，建议持有观望",
-"【验证】技术面+资金面+政策面完成校验",
-"【检索】查看近期规模与流动性 | https://www.10jqka.com.cn/",
-"【风格】中小盘均衡，弹性适中 | https://www.csindex.com.cn/",
-"【风险】波动可控，下行空间有限",
-"【配置】适合中长期底仓配置",
-"【结论】无明显做多信号，暂不加仓",
-"【结论】无明显风险信号，暂不减持",
-"【判断】趋势平稳，以持有为主",
-"【推理】综合判定：持有观望",
-"【核对】当前估值处于合理区间",
-"【观察】市场风格偏向成长",
-"【监测】成交量保持温和水平",
-"【评估】短期无趋势性机会",
-"【等待】等待明确信号出现",
-"【完成】AI for ETF 分析结束"
-],
-"159915": [
-"【技术】MACD高位，红柱缩短，动能减弱 | https://www.10jqka.com.cn/",
-"【指数】创业板指创年内高位 | https://www.szse.cn/",
-"【政策】创业板改革政策持续催化 | https://www.csrc.gov.cn/",
-"【资金】短期获利盘了结意愿上升 | https://data.eastmoney.com/",
-"【风险】高位注意回撤风险",
-"【策略】不追高，控仓位",
-"【验证】技术面+政策面+资金面验证",
-"【检索】创业板ETF资金流向 | https://data.10jqka.com.cn/",
-"【估值】处于相对高位区间",
-"【结论】趋势仍在，但需谨慎",
-"【策略】建议持有观望",
-"【判断】短期偏震荡，中期看景气",
-"【推理】综合判定：持有观望",
-"【监测】权重股走势偏强",
-"【评估】短期涨幅较大",
-"【风控】做好回撤应对",
-"【观察】量能是否持续",
-"【核对】政策利好延续性",
-"【等待】回踩企稳信号",
-"【完成】AI for ETF 分析结束"
-],
-"513120": [
-"【技术】MACD多头排列，趋势向上 | https://www.10jqka.com.cn/",
-"【行业】创新药进入业绩兑现期 | https://www.pharmcube.com.cn/",
-"【资金】南向资金持续流入 | https://data.10jqka.com.cn/",
-"【估值】港股医药处于历史低位 | https://www.hkex.com.hk/",
-"【催化】临床数据与BD事件密集",
-"【结论】趋势明确，建议买入",
-"【策略】逢低布局，中期持有",
-"【验证】技术面+行业面+资金面验证",
-"【检索】港股创新药持仓与景气度 | https://www.10jqka.com.cn/",
-"【判断】中期向上确定性高",
-"【推理】综合判定：买入",
-"【监测】行业景气持续向上",
-"【评估】业绩兑现能力强",
-"【核对】机构持仓稳步提升",
-"【观察】海外催化不断",
-"【政策】医药环境持续回暖",
-"【等待】调整即是机会",
-"【配置】中期核心赛道",
-"【风险】波动可控",
-"【完成】AI for ETF 分析结束"
-],
-"513090": [
-"【技术】MACD弱势震荡，筑底阶段 | https://www.10jqka.com.cn/",
-"【行业】港股券商低估值，但缺乏催化 | https://www.hkex.com.hk/",
-"【资金】流入不明显，情绪一般 | https://data.10jqka.com.cn/",
-"【结论】底部区域，但暂无爆发力",
-"【策略】耐心持有，等待风口",
-"【验证】技术面+行业面验证",
-"【推理】综合判定：持有",
-"【监测】港股流动性修复进度",
-"【评估】估值处于历史低位",
-"【核对】交易量逐步回暖",
-"【观察】政策利好传导",
-"【配置】左侧布局区间",
-"【风险】下行空间有限",
-"【等待】市场成交量放大",
-"【风格】顺周期弹性品种",
-"【结构】佣金业务改善",
-"【判断】安全边际较高",
-"【结论】暂不加减仓",
-"【观望】等待主升浪信号",
-"【完成】AI for ETF 分析结束"
-],
-"518880": [
-"【技术】MACD多头，金价稳健上行 | https://www.10jqka.com.cn/",
-"【宏观】全球央行持续购金 | https://www.gold.org/",
-"【避险】地缘风险支撑金价 | https://www.reuters.com/",
-"【资金】黄金ETF持续增配 | https://data.10jqka.com.cn/",
-"【结论】趋势稳健，建议持有",
-"【策略】逢低吸纳，不追高",
-"【验证】技术面+宏观面验证",
-"【推理】综合判定：买入/持有",
-"【监测】美元指数走势偏弱",
-"【评估】抗通胀属性凸显",
-"【核对】机构持续上调目标价",
-"【观察】避险需求提升",
-"【配置】防御类核心资产",
-"【风险】回撤幅度较小",
-"【政策】货币宽松预期",
-"【周期】贵金属上行周期",
-"【判断】中期趋势不变",
-"【结论】稳健看多",
-"【等待】小幅回踩加仓",
-"【完成】AI for ETF 分析结束"
-],
-"510300": [
-"【技术】MACD震荡，方向不明 | https://www.10jqka.com.cn/",
-"【风格】大盘蓝筹，防御性强 | https://www.csindex.com.cn/",
-"【资金】风格偏向成长，短期平淡 | https://data.eastmoney.com/",
-"【结论】震荡格局，建议持有",
-"【推理】综合判定：持有观望",
-"【监测】核心资产估值合理",
-"【评估】股息率具备吸引力",
-"【核对】机构长期配置稳定",
-"【观察】成交量保持低迷",
-"【配置】底仓配置品种",
-"【风险】波动较小",
-"【政策】中长期资金支持",
-"【判断】无机会无风险",
-"【策略】以静制动",
-"【等待】风格切换信号",
-"【结构】行业分布均衡",
-"【结论】震荡观望为主",
-"【风控】仓位保持稳定",
-"【验证】多维度交叉确认",
-"【完成】AI for ETF 分析结束"
-],
-"513310": [
-"【技术】MACD多头，行业高景气 | https://www.10jqka.com.cn/",
-"【行业】全球半导体周期上行 | https://www.trendforce.com/",
-"【资金】资金流入明显 | https://data.10jqka.com.cn/",
-"【结论】趋势明确，建议买入",
-"【推理】综合判定：买入",
-"【监测】存储芯片持续涨价",
-"【评估】韩国出口数据强劲",
-"【核对】全球销售额持续增长",
-"【观察】国产替代加速",
-"【配置】硬科技核心赛道",
-"【政策】自主可控支持",
-"【周期】行业上行周期",
-"【风险】短期波动不改趋势",
-"【策略】逢调整加仓",
-"【判断】中期趋势确定",
-"【催化】订单持续饱满",
-"【验证】技术+行业+资金共振",
-"【结论】坚定看多",
-"【等待】回踩布局机会",
-"【完成】AI for ETF 分析结束"
-],
-"513180": [
-"【技术】MACD多头，强势上行 | https://www.10jqka.com.cn/",
-"【估值】港股科技估值修复 | https://www.hkex.com.hk/",
-"【资金】南向资金大幅流入 | https://data.10jqka.com.cn/",
-"【结论】多头趋势，建议持有",
-"【推理】综合判定：买入/持有",
-"【监测】业绩持续超预期",
-"【评估】估值远低于美股科技",
-"【核对】外资持续回流",
-"【观察】流动性持续改善",
-"【政策】平台经济政策回暖",
-"【配置】港股核心资产",
-"【风险】波动较大但趋势向上",
-"【策略】坚定持有+逢低加",
-"【判断】中期空间巨大",
-"【催化】业绩+估值双击",
-"【验证】多维度看多信号",
-"【结论】中期看多不变",
-"【结构】硬科技权重占比高",
-"【等待】加速上涨信号",
-"【完成】AI for ETF 分析结束"
-],
-"588000": [
-"【技术】MACD稳步向上 | https://www.10jqka.com.cn/",
-"【定位】硬科技赛道 | https://www.sse.com.cn/",
-"【政策】自主可控大方向支持 | https://www.miit.gov.cn/",
-"【结论】中期向好，建议持有",
-"【推理】综合判定：持有",
-"【监测】研发投入占比高",
-"【评估】业绩增速领先",
-"【核对】IPO数量持续领先",
-"【观察】资金关注度提升",
-"【配置】科技成长核心",
-"【风险】波动偏高但景气向上",
-"【策略】逢调整布局",
-"【判断】趋势稳步向上",
-"【催化】政策持续利好",
-"【验证】技术+政策共振",
-"【结论】优先配置方向",
-"【结构】硬科技占比极高",
-"【等待】放量突破信号",
-"【风控】控制仓位稳健",
-"【完成】AI for ETF 分析结束"
-],
-"510050": [
-"【技术】MACD偏弱，大盘股平淡 | https://www.10jqka.com.cn/",
-"【风格】超大盘，防御优先 | https://www.sse.com.cn/",
-"【结论】震荡观望，以稳为主",
-"【推理】综合判定：持有",
-"【监测】央企回购增持不断",
-"【评估】估值处于低位",
-"【核对】盈利稳定现金流好",
-"【观察】资金流出明显",
-"【配置】防御型底仓",
-"【风险】下行空间有限",
-"【政策】国资改革支持",
-"【判断】短期弹性不足",
-"【策略】不激进不追高",
-"【结构】金融消费占比较高",
-"【结论】弱势震荡格局",
-"【验证】多维度信号平淡",
-"【等待】市场风格切换",
-"【风控】保持轻仓观望",
-"【观望】等待放量信号",
-"【完成】AI for ETF 分析结束"
-],
-"588200": [
-"【技术】MACD多头，芯片高景气 | https://www.10jqka.com.cn/",
-"【行业】国产替代加速 | https://www.miit.gov.cn/",
-"【结论】趋势强劲，建议持有",
-"【推理】综合判定：买入",
-"【监测】全产业链涨价延续",
-"【评估】设备材料订单饱满",
-"【核对】技术突破不断",
-"【观察】资金大幅流入",
-"【政策】自主可控最强方向",
-"【配置】科技赛道最优选择",
-"【周期】行业高景气周期",
-"【风险】波动不改长期趋势",
-"【策略】逢低布局坚定持有",
-"【判断】中期上行明确",
-"【催化】新品发布密集",
-"【验证】技术+行业+资金确认",
-"【结论】高景气持续",
-"【结构】芯片设计制造全覆盖",
-"【等待】调整即是机会",
-"【完成】AI for ETF 分析结束"
-],
-"515880": [
-"【技术】MACD多头，数字经济主线 | https://www.10jqka.com.cn/",
-"【结论】趋势向上，建议持有",
-"【推理】综合判定：持有",
-"【监测】CPO商用加速推进",
-"【评估】光模块需求旺盛",
-"【核对】5G-A建设落地",
-"【观察】算力政策持续支持",
-"【政策】新基建核心方向",
-"【配置】数字经济核心",
-"【风险】高位注意波动",
-"【策略】持股待涨为主",
-"【判断】中期趋势向好",
-"【催化】产业升级加速",
-"【验证】技术面强势",
-"【资金】呈现流入态势",
-"【结构】通信设备全覆盖",
-"【结论】趋势未改",
-"【风控】做好止盈预案",
-"【等待】量能持续放大",
-"【完成】AI for ETF 分析结束"
-],
-"512100": [
-"【技术】MACD小幅向上，小盘活跃 | https://www.10jqka.com.cn/",
-"【结论】震荡偏强，建议持有",
-"【推理】综合判定：持有",
-"【监测】小盘风格占优",
-"【评估】市场活跃度提升",
-"【核对】成交保持温和",
-"【观察】弹性相对较大",
-"【政策】专精特新支持",
-"【配置】进取型配置",
-"【风险】波动相对偏高",
-"【策略】不追高不杀跌",
-"【判断】震荡偏强格局",
-"【验证】技术面温和向上",
-"【资金】流向保持中性",
-"【结构】中小盘成长为主",
-"【结论】机会风险并存",
-"【风控】仓位适中",
-"【等待】明确突破信号",
-"【观望】保持耐心",
-"【完成】AI for ETF 分析结束"
-],
-"159949": [
-"【技术】MACD高位，注意波动 | https://www.10jqka.com.cn/",
-"【结论】谨慎持有，不追高",
-"【推理】综合判定：持有观望",
-"【监测】权重股走势偏强",
-"【评估】短期涨幅较大",
-"【核对】估值相对偏高",
-"【观察】资金呈流出态势",
-"【政策】改革政策催化",
-"【风险】回撤概率上升",
-"【策略】控仓谨慎持有",
-"【判断】高位震荡格局",
-"【验证】技术面动能减弱",
-"【资金】获利盘了结",
-"【结论】趋势仍在需谨慎",
-"【风控】做好回撤应对",
-"【等待】回踩企稳",
-"【结构】创业板核心龙头",
-"【配置】降低操作频率",
-"【观望】等待明确信号",
-"【完成】AI for ETF 分析结束"
-],
-"513050": [
-"【技术】MACD震荡向上 | https://www.10jqka.com.cn/",
-"【政策】平台经济回暖 | https://www.csrc.gov.cn/",
-"【结论】趋势向好，建议持有",
-"【推理】综合判定：买入/持有",
-"【监测】业绩持续改善",
-"【评估】估值修复空间大",
-"【核对】资金持续流入",
-"【观察】监管环境常态化",
-"【政策】支持平台经济发展",
-"【配置】港股互联网核心",
-"【风险】波动适中",
-"【策略】逢低布局",
-"【判断】震荡上行确立",
-"【催化】业绩稳步释放",
-"【验证】技术+政策+资金",
-"【结论】中期看多",
-"【结构】互联网龙头集中",
-"【等待】加速上涨信号",
-"【观望】耐心持有",
-"【完成】AI for ETF 分析结束"
-],
-"159363": [
-"【技术】高位震荡，注意波动 | https://www.10jqka.com.cn/",
-"【结论】谨慎观望，控仓为主",
-"【推理】综合判定：持有观望",
-"【监测】AI硬件高景气",
-"【评估】短期涨幅过大",
-"【核对】资金关注度高",
-"【观察】警惕顶背离",
-"【政策】AI产业支持",
-"【风险】波动加大",
-"【策略】控仓持有",
-"【判断】高位偏谨慎",
-"【验证】技术面动能减弱",
-"【催化】CPO光模块持续",
-"【结论】趋势未坏",
-"【风控】不追高为主",
-"【等待】回踩机会",
-"【结构】AI核心标的集中",
-"【配置】降低仓位",
-"【观望】等待企稳",
-"【完成】AI for ETF 分析结束"
-],
-"159326": [
-"【技术】稳步上行 | https://www.10jqka.com.cn/",
-"【结论】稳健向好，建议持有",
-"【推理】综合判定：持有",
-"【监测】电网投资稳增长",
-"【评估】特高压建设加速",
-"【核对】业绩稳健增长",
-"【观察】资金持续流入",
-"【政策】新基建稳增长主线",
-"【配置】稳健型投资者首选",
-"【风险】波动极小",
-"【策略】长期持有",
-"【判断】趋势稳健向上",
-"【验证】技术+政策+资金",
-"【结论】稳增长核心",
-"【结构】设备龙头全覆盖",
-"【观望】无操作必要",
-"【风控】安心持有",
-"【等待】长牛延续",
-"【完成】AI for ETF 分析结束"
-],
-"159206": [
-"【技术】趋势强势 | https://www.10jqka.com.cn/",
-"【主题】商业航天催化多 | https://www.spacechina.com/",
-"【结论】多头趋势，建议持有",
-"【推理】综合判定：买入",
-"【监测】低轨卫星建设加速",
-"【评估】行业爆发期",
-"【核对】发射任务密集",
-"【观察】资金大幅流入",
-"【政策】航天产业支持",
-"【催化】航天大会催化",
-"【配置】新主题核心",
-"【风险】主题性波动",
-"【策略】积极参与",
-"【判断】主升浪阶段",
-"【验证】量价齐升",
-"【结论】中期趋势明确",
-"【结构】卫星产业链全覆盖",
-"【等待】继续走强",
-"【观望】坚定持有",
-"【完成】AI for ETF 分析结束"
-],
-"512880": [
-"【技术】底部启动 | https://www.10jqka.com.cn/",
-"【结论】布局阶段，建议持有",
-"【推理】综合判定：持有",
-"【监测】业绩大幅改善",
-"【评估】估值历史低位",
-"【核对】交易量回暖",
-"【观察】政策利好不断",
-"【政策】创业板改革利好",
-"【催化】衍生品政策预期",
-"【配置】券商beta机会",
-"【风险】安全边际高",
-"【策略】提前布局",
-"【判断】底部启动初期",
-"【验证】技术面金叉",
-"【结论】机会明确",
-"【结构】头部券商全覆盖",
-"【等待】放量上涨",
-"【观望】耐心持有",
-"【完成】AI for ETF 分析结束"
-],
-"159516": [
-"【技术】中期向上 | https://www.10jqka.com.cn/",
-"【行业】设备高景气 | https://www.semi.org/",
-"【结论】建议持有",
-"【推理】综合判定：买入",
-"【监测】国产替代加速",
-"【评估】技术壁垒提升",
-"【核对】订单持续饱满",
-"【观察】资金流入明显",
-"【政策】自主可控核心",
-"【催化】新品发布密集",
-"【配置】硬科技核心",
-"【风险】波动不改趋势",
-"【策略】逢低布局",
-"【判断】中期高景气",
-"【验证】技术+行业+政策",
-"【结论】坚定看多",
-"【结构】设备材料全覆盖",
-"【等待】调整加仓",
-"【观望】长期配置",
-"【完成】AI for ETF 分析结束"
-]
-};
+    <script>
+        let isAnalyzing = false;
+        let timers = [];
+        async function analyze() {
+            if (isAnalyzing) return;
+            const btn = document.getElementById('btn');
+            const res = document.getElementById('result');
+            const key = document.getElementById('etfSel').value;
+            
+            btn.disabled = true;
+            isAnalyzing = true;
+            timers.forEach(clearTimeout);
+            timers = [];
 
-function startAnalyze() {
-    const sel = document.getElementById("etfSelect");
-    const key = sel.value;
-    const thinkOut = document.getElementById("thinkOutput");
-    const resBox = document.getElementById("result");
-    const btn = document.querySelector("button");
-    
-    thinkOut.innerHTML = "";
-    resBox.style.display = "none";
-    btn.disabled = true;
+            // 初始化加载界面
+            res.innerHTML = `
+                <div class="result-card">
+                    <div class="loading" id="loading-content">
+                        <div class="loading-item">🧠 AI正在获取对应标的相关数据和信息...</div>
+                    </div>
+                </div>
+            `;
+            const loadingContent = document.getElementById('loading-content');
 
-    const list = thinkText[key] || ["【AI】正在分析..."];
-    let i = 0;
-    const timer = setInterval(() => {
-        if (i >= list.length) {
-            clearInterval(timer);
-            btn.disabled = false;
-            resBox.style.display = "block";
-            resBox.innerText = "✅ AI for ETF 分析完成：建议根据趋势理性决策，以上内容不构成投资建议。";
-            return;
+            // 逐步加载思考过程
+            timers.push(setTimeout(() => {
+                loadingContent.innerHTML += '<div class="loading-item">🧠 AI正在分析理解数据和信息背后的含义...</div>';
+            }, 5000));
+            timers.push(setTimeout(() => {
+                loadingContent.innerHTML += '<div class="loading-item">🧠 AI正在结合过去的分析对新的内容生成对应的判断...</div>';
+            }, 10000));
+            timers.push(setTimeout(() => {
+                loadingContent.innerHTML += '<div class="loading-item">🧠 AI正在生成对应的分析结果...</div>';
+            }, 15000));
+
+            try {
+                // 调用后端接口
+                const resp = await fetch('/get_advice', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({etf_key: key})
+                });
+                const data = await resp.json();
+
+                // 确保等待20秒后展示结果
+                await new Promise(resolve => {
+                    timers.push(setTimeout(resolve, 20000));
+                });
+
+                if (data.code !== 200) {
+                    res.innerHTML = `<div class="result-card">${data.msg}</div>`;
+                    return;
+                }
+
+                const d = data.data;
+                const txt = `基于当前信息，我${d.suggest==='买入'?'建议买入':d.suggest==='持有'?'建议持有':'建议观望'}。\n\n${d.reason}`;
+                
+                // 渲染结果（日期单独一行）
+                res.innerHTML = `<div class="result-card">
+                    <div class="card-header">
+                        <div class="card-title">投资建议</div>
+                        <div class="card-code">${d.code} | ${d.name}</div>
+                        <div class="card-date">分析日期：${d.date}</div> <!-- 日期单独一行 -->
+                    </div>
+                    <div class="info-row">
+                        <div class="info-col"><div class="label">操作建议</div><div class="suggest">${d.suggest}</div></div>
+                        <div class="info-col"><div class="label">信心度</div><div class="date">${d.confidence}</div></div>
+                    </div>
+                    <div class="reason" id="text"></div>
+                </div>`;
+                
+                // 打字机效果
+                let i = 0, t = document.getElementById('text');
+                const itv = setInterval(() => {
+                    if (i >= txt.length) {
+                        clearInterval(itv);
+                        return;
+                    }
+                    t.textContent += txt[i];
+                    i++;
+                }, 15);
+
+            } catch (e) {
+                await new Promise(resolve => {
+                    timers.push(setTimeout(resolve, 20000));
+                });
+                res.innerHTML = '<div class="result-card">⚠️ 网络异常，请重试</div>';
+            } finally {
+                timers.forEach(clearTimeout);
+                timers = [];
+                btn.disabled = false;
+                isAnalyzing = false;
+            }
         }
-        const div = document.createElement("div");
-        div.className = "think-line";
-        div.innerText = list[i];
-        thinkOut.appendChild(div);
-        thinkOut.scrollTop = thinkOut.scrollHeight;
-        i++;
-    }, 1000);
-}
-</script>
+    </script>
 </body>
 </html>
