@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>ETFforAI 登录</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body{background:#f5f6f8;display:grid;place-items:center;height:100vh;margin:0}
+        .box{background:#fff;padding:30px;border-radius:16px;width:90%;max-width:400px}
+        h2{text-align:center;margin-bottom:20px}
+        input{width:100%;padding:12px;margin:8px 0;border:1px solid #ddd;border-radius:8px}
+        button{width:100%;padding:12px;background:#c9a86c;color:white;border:none;border-radius:8px;margin-top:10px}
+        .tip{color:red;text-align:center;margin-top:10px}
+    </style>
+</head>
+<body>
+<div class="box">
+    <h2>📊 ETFforAI 登录</h2>
+    <input id="user" placeholder="账号">
+    <input id="pwd" type="password" placeholder="密码">
+    <button onclick="go()">登录</button>
+    <div class="tip" id="tip"></div>
+</div>
+<script>
+async function go(){
+    const u = document.getElementById('user').value;
+    const p = document.getElementById('pwd').value;
+    const res = await fetch('/login',{
+        method:'POST',
+        headers:{'Content-Type':'application/x-www-form-urlencoded'},
+        body:`username=${u}&password=${p}`
+    });
+    const data = await res.json();
+    if(data.code===200) location.reload();
+    else document.getElementById('tip').innerText = data.msg;
+}
+</script>
+</body>
+</html>
