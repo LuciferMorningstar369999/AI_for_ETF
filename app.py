@@ -70,7 +70,7 @@ def get_advice():
             "suggest": data['suggest'],
             "confidence": data['confidence'],
             "reason": data['reason'],
-            "date": "2026-04-19"
+            "date": "2026-04-21"
         }
     })
 
